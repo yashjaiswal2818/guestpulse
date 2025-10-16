@@ -6,13 +6,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { qrCode, memberIds } = body
 
-    if (!qrCode) {
-      return NextResponse.json(
-        { error: 'QR code is required' },
-        { status: 400 }
-      )
-    }
-
     // Check if it's a team check-in (memberIds provided)
     if (memberIds && Array.isArray(memberIds)) {
       // Team check-in: Update multiple registrations
@@ -37,6 +30,14 @@ export async function POST(request: NextRequest) {
         checkedIn: data,
         count: data.length,
       })
+    }
+
+    // Validate qrCode for individual check-in
+    if (!qrCode) {
+      return NextResponse.json(
+        { error: 'QR code is required' },
+        { status: 400 }
+      )
     }
 
     // Individual check-in: Find by QR code
