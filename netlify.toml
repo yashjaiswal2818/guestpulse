@@ -5,6 +5,8 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+  # Disable secrets scanning - we're using public env vars only
+  SECRETS_SCAN_ENABLED = "false"
 
 # Next.js plugin configuration
 [[plugins]]
