@@ -1,0 +1,46 @@
+import { NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
+
+export async function GET() {
+    try {
+        // Get all events with their registrations
+        const { data: events, error } = await supabase
+            .from('events')
+            .select('id, name, date')
+            .order('date', { ascending: true })
+            .limit(10)
+
+        if (error) throw error
+
+        // Calculate show rate for each event
+        const chartData = await Promise.all(
+            (events || []).map(async (event) => {
+                const { data: registrations } = await supabase
+                    .from('registrations')
+                    .select('attendance, checked_in')
+                    .eq('event_id', event.id)
+
+                const registered = registrations?.filter(r => r.attendance === 'yes').length || 0
+                const attended = registrations?.filter(r => r.checked_in).length || 0
+
+                return {
+                    date: new Date(event.date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    }),
+                    registered,
+                    attended,
+                    name: event.name
+                }
+            })
+        )
+
+        return NextResponse.json(chartData)
+    } catch (error) {
+        console.error('Show rate analytics error:', error)
+        return NextResponse.json(
+            { error: 'Failed to fetch show rate data' },
+            { status: 500 }
+        )
+    }
+}

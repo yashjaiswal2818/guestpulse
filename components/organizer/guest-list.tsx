@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Download, Search, Check, X, Clock } from 'lucide-react'
 import { Registration } from '@/lib/types/database'
+import { CommitmentBadge } from './commitment-badge'
 
 interface GuestListProps {
     registrations: Registration[]
@@ -82,7 +83,12 @@ export default function GuestList({ registrations }: GuestListProps) {
                     <TableBody>
                         {filteredRegistrations.map((reg) => (
                             <TableRow key={reg.id}>
-                                <TableCell className="font-medium">{reg.name}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium">{reg.name}</span>
+                                        <CommitmentBadge email={reg.email} />
+                                    </div>
+                                </TableCell>
                                 <TableCell>{reg.email}</TableCell>
                                 <TableCell>
                                     <Badge

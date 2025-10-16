@@ -5,6 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import GuestList from '@/components/organizer/guest-list'
 import EventStats from '@/components/organizer/event-stats'
 import TeamsList from '@/components/organizer/teams-list'
+import { PredictionCard } from '@/components/organizer/prediction-card'
+import { QuickStats } from '@/components/organizer/analytics-charts'
+import { LiveActivityFeed } from '@/components/organizer/live-feed'
+import { TeamPerformance } from '@/components/organizer/team-performance'
 import { Button } from '@/components/ui/button'
 import { Download, ExternalLink, QrCode } from 'lucide-react'
 import Link from 'next/link'
@@ -92,6 +96,12 @@ export default async function EventDashboard({
       {/* Stats Cards */}
       <EventStats stats={stats} capacity={event.capacity} />
 
+      {/* Prediction and Live Feed */}
+      <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <PredictionCard eventId={params.id} />
+        <LiveActivityFeed eventId={params.id} />
+      </div>
+
       {/* Tabs */}
       <Tabs defaultValue="guests" className="mt-8">
         <TabsList>
@@ -103,6 +113,9 @@ export default async function EventDashboard({
           </TabsTrigger>
           <TabsTrigger value="dietary">
             Dietary Preferences
+          </TabsTrigger>
+          <TabsTrigger value="analytics">
+            Analytics
           </TabsTrigger>
         </TabsList>
 
@@ -116,6 +129,13 @@ export default async function EventDashboard({
 
         <TabsContent value="dietary" className="mt-6">
           <DietaryPreferences registrations={registrations || []} />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6">
+          <div className="space-y-6">
+            <QuickStats eventId={params.id} />
+            <TeamPerformance eventId={params.id} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
