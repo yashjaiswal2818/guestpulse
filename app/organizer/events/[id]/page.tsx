@@ -172,7 +172,7 @@ function DietaryPreferences({ registrations }: { registrations: any[] }) {
             {Object.entries(mealCounts).map(([meal, count]) => (
               <div key={meal} className="flex justify-between">
                 <span className="capitalize">{meal}</span>
-                <span className="font-semibold">{count}</span>
+                <span className="font-semibold">{count as number}</span>
               </div>
             ))}
           </div>

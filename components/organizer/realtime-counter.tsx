@@ -31,8 +31,8 @@ export function RealtimeCounter({ eventId }: { eventId: string }) {
                     filter: `event_id=eq.${eventId}`
                 },
                 (payload) => {
-                    console.log('Change received!', payload)
-                    fetchStats() // Refetch stats on any change
+                    // Change received, refetch stats
+                    fetchStats()
                 }
             )
             .subscribe()

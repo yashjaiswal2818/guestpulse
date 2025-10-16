@@ -9,10 +9,14 @@ export default async function SuccessPage({
   params,
   searchParams,
 }: {
-  params: { slug: string }
-  searchParams: { id: string }
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ id: string }>
 }) {
-  if (!searchParams.id) {
+  // Await params and searchParams in Next.js 15
+  const _params = await params
+  const search = await searchParams
+
+  if (!search.id) {
     notFound()
   }
 
@@ -20,7 +24,7 @@ export default async function SuccessPage({
   const { data: registration, error: regError } = await supabase
     .from('registrations')
     .select('*')
-    .eq('id', searchParams.id)
+    .eq('id', search.id)
     .single()
 
   if (regError || !registration) {
@@ -64,7 +68,7 @@ export default async function SuccessPage({
               <span className="text-gray-600">Status:</span>
               <Badge variant={
                 registration.attendance === 'yes' ? 'default' :
-                registration.attendance === 'maybe' ? 'secondary' : 'destructive'
+                  registration.attendance === 'maybe' ? 'secondary' : 'destructive'
               }>
                 {registration.attendance}
               </Badge>
@@ -84,8 +88,8 @@ export default async function SuccessPage({
           <p className="text-gray-600 mb-6">
             Show this QR code at the event for quick check-in
           </p>
-          <QRCodeDisplay 
-            value={registration.qr_code} 
+          <QRCodeDisplay
+            value={registration.qr_code}
             name={registration.name}
           />
         </Card>

@@ -64,9 +64,6 @@ export default function RSVPForm({ eventId, eventSlug }: RSVPFormProps) {
                 teamName: data.hasTeam && data.team_name ? data.team_name : undefined,
             }
 
-            console.log('Submitting RSVP with payload:', payload)
-            console.log('Event ID type:', typeof eventId, 'Value:', eventId)
-
             const response = await fetch('/api/rsvp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
