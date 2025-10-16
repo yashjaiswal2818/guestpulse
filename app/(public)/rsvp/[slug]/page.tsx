@@ -7,13 +7,16 @@ import { Calendar, MapPin, Users } from 'lucide-react'
 export default async function RSVPPage({ 
   params 
 }: { 
-  params: { slug: string } 
+  params: Promise<{ slug: string }>
 }) {
+  // Await params in Next.js 15
+  const { slug } = await params
+
   // Fetch event data
   const { data: event, error } = await supabase
     .from('events')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single()
 
   if (error || !event) {

@@ -16,13 +16,16 @@ import Link from 'next/link'
 export default async function EventDashboard({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  // Await params in Next.js 15
+  const { id } = await params
+
   // Fetch event
   const { data: event, error } = await supabase
     .from('events')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !event) {
@@ -33,7 +36,7 @@ export default async function EventDashboard({
   const { data: registrations } = await supabase
     .from('registrations')
     .select('*')
-    .eq('event_id', params.id)
+    .eq('event_id', id)
     .order('created_at', { ascending: false })
 
   const stats = {
@@ -98,8 +101,8 @@ export default async function EventDashboard({
 
       {/* Prediction and Live Feed */}
       <div className="grid md:grid-cols-2 gap-6 mt-6">
-        <PredictionCard eventId={params.id} />
-        <LiveActivityFeed eventId={params.id} />
+        <PredictionCard eventId={id} />
+        <LiveActivityFeed eventId={id} />
       </div>
 
       {/* Tabs */}
@@ -133,8 +136,8 @@ export default async function EventDashboard({
 
         <TabsContent value="analytics" className="mt-6">
           <div className="space-y-6">
-            <QuickStats eventId={params.id} />
-            <TeamPerformance eventId={params.id} />
+            <QuickStats eventId={id} />
+            <TeamPerformance eventId={id} />
           </div>
         </TabsContent>
       </Tabs>

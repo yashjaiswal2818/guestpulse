@@ -10,10 +10,11 @@ function isUUID(str: string): boolean {
 // GET /api/events/[id] - Fetch single event by ID or slug
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const identifier = params.id
+        // Await params in Next.js 15
+        const { id: identifier } = await params
         const isId = isUUID(identifier)
 
         // Query by ID or slug
@@ -80,10 +81,11 @@ export async function GET(
 // PATCH /api/events/[id] - Update event details (only works with UUID)
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const identifier = params.id
+        // Await params in Next.js 15
+        const { id: identifier } = await params
 
         // Only allow updates by ID
         if (!isUUID(identifier)) {
@@ -131,10 +133,11 @@ export async function PATCH(
 // DELETE /api/events/[id] - Delete event and cascade to registrations (only works with UUID)
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const identifier = params.id
+        // Await params in Next.js 15
+        const { id: identifier } = await params
 
         // Only allow deletes by ID
         if (!isUUID(identifier)) {

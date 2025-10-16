@@ -3,13 +3,16 @@ import { NextResponse } from 'next/server'
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    // Await params in Next.js 15
+    const { id } = await params
+
     // Get all registrations for this event
     const { data: registrations } = await supabase
         .from('registrations')
         .select('*')
-        .eq('event_id', params.id)
+        .eq('event_id', id)
 
     if (!registrations) {
         return NextResponse.json({ error: 'No registrations found' }, { status: 404 })
@@ -26,7 +29,7 @@ export async function GET(
             .from('registrations')
             .select('*')
             .eq('email', reg.email)
-            .neq('event_id', params.id)
+            .neq('event_id', id)
 
         const attended = history?.filter(r => r.checked_in).length || 0
         const registered = history?.length || 0
