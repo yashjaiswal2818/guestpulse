@@ -1,14 +1,27 @@
+import { createClient } from '@/lib/supabase-server'
+import { redirect } from 'next/navigation'
 import { ShowRateChart, AttendanceByHourChart, RSVPBreakdownChart, TeamPerformanceChart } from '@/components/organizer/analytics-charts'
 
 export default async function AnalyticsPage() {
+    const supabase = await createClient()
+
+    // Check authentication
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/login')
+    }
+
     // Fetch data from analytics APIs
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
     const [showRateData, hourlyData, rsvpData, teamData] = await Promise.all([
-        fetch(`${baseUrl}/api/analytics/show-rate`, { cache: 'no-store' }).then(r => r.json()),
-        fetch(`${baseUrl}/api/analytics/hourly`, { cache: 'no-store' }).then(r => r.json()),
-        fetch(`${baseUrl}/api/analytics/rsvp-breakdown`, { cache: 'no-store' }).then(r => r.json()),
-        fetch(`${baseUrl}/api/analytics/teams`, { cache: 'no-store' }).then(r => r.json())
+        fetch(`${baseUrl}/api/analytics/show-rate`, { cache: 'no-store' }).then(r => r.json()).catch(() => []),
+        fetch(`${baseUrl}/api/analytics/hourly`, { cache: 'no-store' }).then(r => r.json()).catch(() => []),
+        fetch(`${baseUrl}/api/analytics/rsvp-breakdown`, { cache: 'no-store' }).then(r => r.json()).catch(() => []),
+        fetch(`${baseUrl}/api/analytics/teams`, { cache: 'no-store' }).then(r => r.json()).catch(() => [])
     ])
 
     return (

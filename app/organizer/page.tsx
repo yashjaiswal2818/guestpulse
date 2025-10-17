@@ -1,15 +1,28 @@
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Calendar, Users, CheckCircle, Clock, Plus, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { redirect } from 'next/navigation'
 
 export default async function OrganizerDashboard() {
-  // Fetch all events
+  const supabase = await createClient()
+  
+  // Check authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Fetch all events for this user
   const { data: events } = await supabase
     .from('events')
     .select('*')
+    .eq('organizer_id', user.id)
     .order('date', { ascending: true })
 
   // Get today's and upcoming events

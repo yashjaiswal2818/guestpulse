@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
     try {
+        const supabase = await createClient()
+        
+        // Check authentication
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
         const { searchParams } = new URL(request.url)
         const eventId = searchParams.get('eventId')
 
@@ -13,12 +24,20 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Fetch event details
+        // Fetch event details and verify ownership
         const { data: event } = await supabase
             .from('events')
             .select('*')
             .eq('id', eventId)
+            .eq('organizer_id', user.id)
             .single()
+
+        if (!event) {
+            return NextResponse.json(
+                { error: 'Event not found or unauthorized' },
+                { status: 404 }
+            )
+        }
 
         // Fetch all registrations for this event
         const { data: registrations, error } = await supabase
@@ -97,6 +116,7 @@ export async function GET(request: NextRequest) {
         )
     }
 }
+
 
 
 

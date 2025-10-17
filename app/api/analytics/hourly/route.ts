@@ -1,12 +1,32 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 
 export async function GET() {
     try {
-        // Get all check-ins with timestamps
+        const supabase = await createClient()
+
+        // Check authentication
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        // Get user's events
+        const { data: events } = await supabase
+            .from('events')
+            .select('id')
+            .eq('organizer_id', user.id)
+
+        const eventIds = events?.map(e => e.id) || []
+
+        // Get all check-ins for user's events with timestamps
         const { data: registrations, error } = await supabase
             .from('registrations')
             .select('checked_in_at')
+            .in('event_id', eventIds)
             .eq('checked_in', true)
             .not('checked_in_at', 'is', null)
 

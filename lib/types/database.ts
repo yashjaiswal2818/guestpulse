@@ -6,6 +6,7 @@ export interface Event {
     date: string;
     location: string | null;
     capacity: number;
+    organizer_id: string;
     organizer_email: string | null;
     created_at: string;
   }

@@ -1,15 +1,28 @@
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, MapPin, Users, ExternalLink } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 export default async function EventsListPage() {
-  // Fetch all events with registration counts
+  const supabase = await createClient()
+  
+  // Check authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Fetch all events for this user with registration counts
   const { data: events } = await supabase
     .from('events')
     .select('*')
+    .eq('organizer_id', user.id)
     .order('date', { ascending: false })
 
   // Get registration counts for each event

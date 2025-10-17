@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase'
-import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase-server'
+import { notFound, redirect } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import GuestList from '@/components/organizer/guest-list'
@@ -18,14 +18,26 @@ export default async function EventDashboard({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const supabase = await createClient()
+  
+  // Check authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
   // Await params in Next.js 15
   const { id } = await params
 
-  // Fetch event
+  // Fetch event and verify ownership
   const { data: event, error } = await supabase
     .from('events')
     .select('*')
     .eq('id', id)
+    .eq('organizer_id', user.id)
     .single()
 
   if (error || !event) {

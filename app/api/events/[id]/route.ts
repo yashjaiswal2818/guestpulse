@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 
 // Helper to check if string is a UUID
 function isUUID(str: string): boolean {
@@ -13,9 +13,16 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const supabase = await createClient()
+        
         // Await params in Next.js 15
         const { id: identifier } = await params
         const isId = isUUID(identifier)
+
+        // Get authenticated user
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
 
         // Query by ID or slug
         const query = supabase
@@ -26,6 +33,12 @@ export async function GET(
             query.eq('id', identifier)
         } else {
             query.eq('slug', identifier)
+        }
+
+        // If user is authenticated, filter by organizer_id (for organizer dashboard)
+        // Public RSVP pages don't need this check
+        if (user && request.headers.get('x-organizer-request') === 'true') {
+            query.eq('organizer_id', user.id)
         }
 
         const { data: event, error } = await query.single()
@@ -84,6 +97,17 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const supabase = await createClient()
+        
+        // Check authentication
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
         // Await params in Next.js 15
         const { id: identifier } = await params
 
@@ -92,6 +116,20 @@ export async function PATCH(
             return NextResponse.json(
                 { error: 'Event updates require ID, not slug' },
                 { status: 400 }
+            )
+        }
+
+        // Verify user owns this event
+        const { data: existingEvent } = await supabase
+            .from('events')
+            .select('organizer_id')
+            .eq('id', identifier)
+            .single()
+
+        if (!existingEvent || existingEvent.organizer_id !== user.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized: You do not own this event' },
+                { status: 403 }
             )
         }
 
@@ -110,6 +148,7 @@ export async function PATCH(
             .from('events')
             .update(updateData)
             .eq('id', identifier)
+            .eq('organizer_id', user.id)
             .select()
             .single()
 
@@ -136,6 +175,17 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const supabase = await createClient()
+        
+        // Check authentication
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
         // Await params in Next.js 15
         const { id: identifier } = await params
 
@@ -144,6 +194,20 @@ export async function DELETE(
             return NextResponse.json(
                 { error: 'Event deletion requires ID, not slug' },
                 { status: 400 }
+            )
+        }
+
+        // Verify user owns this event
+        const { data: existingEvent } = await supabase
+            .from('events')
+            .select('organizer_id')
+            .eq('id', identifier)
+            .single()
+
+        if (!existingEvent || existingEvent.organizer_id !== user.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized: You do not own this event' },
+                { status: 403 }
             )
         }
 
@@ -166,6 +230,7 @@ export async function DELETE(
             .from('events')
             .delete()
             .eq('id', identifier)
+            .eq('organizer_id', user.id)
 
         if (eventError) {
             return NextResponse.json(

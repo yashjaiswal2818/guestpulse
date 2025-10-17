@@ -44,7 +44,7 @@ export default function NewEventPage() {
             }
 
             // Redirect to the new event page
-            router.push(`/organizer/events/${result.event.id}`)
+            router.push(`/organizer/events/${result.id}`)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Something went wrong')
         } finally {

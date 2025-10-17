@@ -4,6 +4,8 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Cart
 
 // Individual chart components for analytics page
 export function ShowRateChart({ data }: { data: any }) {
+  const chartData = Array.isArray(data) ? data : []
+
   return (
     <Card>
       <CardHeader>
@@ -11,23 +13,31 @@ export function ShowRateChart({ data }: { data: any }) {
         <CardDescription>Predicted vs actual attendance over time</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data || []}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="event" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="predicted" stroke="#3b82f6" strokeWidth={2} />
-            <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={2} />
-          </LineChart>
-        </ResponsiveContainer>
+        {chartData.length === 0 ? (
+          <div className="h-[300px] flex items-center justify-center text-gray-500">
+            No data available yet. Create events and collect RSVPs to see trends.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="event" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="predicted" stroke="#3b82f6" strokeWidth={2} />
+              <Line type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   )
 }
 
 export function AttendanceByHourChart({ data }: { data: any }) {
+  const chartData = Array.isArray(data) ? data : []
+
   return (
     <Card>
       <CardHeader>
@@ -35,22 +45,29 @@ export function AttendanceByHourChart({ data }: { data: any }) {
         <CardDescription>Peak check-in times across all events</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data || []}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="hour" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="count" fill="#3b82f6" />
-          </BarChart>
-        </ResponsiveContainer>
+        {chartData.length === 0 ? (
+          <div className="h-[300px] flex items-center justify-center text-gray-500">
+            No check-in data yet. Check in guests to see hourly patterns.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="hour" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count" fill="#3b82f6" />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   )
 }
 
 export function RSVPBreakdownChart({ data }: { data: any }) {
-  const chartData = data || [
+  // Ensure data is always an array
+  const chartData = Array.isArray(data) && data.length > 0 ? data : [
     { name: 'Yes', value: 0, color: '#10b981' },
     { name: 'Maybe', value: 0, color: '#f59e0b' },
     { name: 'No', value: 0, color: '#ef4444' },
@@ -89,6 +106,8 @@ export function RSVPBreakdownChart({ data }: { data: any }) {
 }
 
 export function TeamPerformanceChart({ data }: { data: any }) {
+  const chartData = Array.isArray(data) ? data : []
+
   return (
     <Card>
       <CardHeader>
@@ -96,15 +115,21 @@ export function TeamPerformanceChart({ data }: { data: any }) {
         <CardDescription>Attendance by team across all events</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data || []} layout="horizontal">
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" domain={[0, 100]} />
-            <YAxis dataKey="team" type="category" width={100} />
-            <Tooltip />
-            <Bar dataKey="showRate" fill="#10b981" />
-          </BarChart>
-        </ResponsiveContainer>
+        {chartData.length === 0 ? (
+          <div className="h-[300px] flex items-center justify-center text-gray-500">
+            No team data yet. Register guests with team names to see performance.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} layout="horizontal">
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" domain={[0, 100]} />
+              <YAxis dataKey="team" type="category" width={100} />
+              <Tooltip />
+              <Bar dataKey="showRate" fill="#10b981" />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   )
